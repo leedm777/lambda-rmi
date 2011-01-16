@@ -1,0 +1,118 @@
+<project name="asterisk-scf-api" default="install"
+         xmlns:artifact="antlib:org.apache.maven.artifact.ant">
+    <property environment="env"/>
+    <property name="slice2java-dir"
+              value="target/generated-sources/slice2java"/>
+    <property name="generated-pom-dir"
+              value="target/tmp/pom"/>
+    <property name="classes-dir" value="target/classes"/>
+    <property name="javadoc-dir" value="target/javadoc"/>
+
+    <property name="mvn.version" value="2.1.1"/>
+
+    <taskdef name="slice2java" classpath="${env.ICE_HOME}/lib/ant-ice.jar"
+             classname="Slice2JavaTask"/>
+
+    <path id="maven-ant-tasks.classpath"
+          path="lib/maven-ant-tasks-${mvn.version}.jar"/>
+    <typedef resource="org/apache/maven/artifact/ant/antlib.xml"
+             uri="antlib:org.apache.maven.artifact.ant"
+             classpathref="maven-ant-tasks.classpath"/>
+
+    <available property="ice-home-set" file="${env.ICE_HOME}"/>
+
+    <target name="fail-if-no-ice-home" unless="ice-home-set">
+        <fail message="ICE_HOME not set correctly (${env.ICE_HOME})"/>
+    </target>
+
+    <target name="get-ice-version" depends="fail-if-no-ice-home">
+        <exec executable="${env.ICE_HOME}/bin/slice2java"
+              outputproperty="ice-version">
+            <arg value="--version"/>
+        </exec>
+        <filter token="ice-version" value="${ice-version}"/>
+    </target>
+
+    <target name="install-ice" depends="get-ice-version"
+            description="Installs ice.jar from ICE_HOME into local Maven repo">
+        <copy file="ice-pom.xml.in" tofile="${generated-pom-dir}/ice-pom.xml"
+              filtering="true" failonerror="true"/>
+        <artifact:pom id="ice-pom" file="${generated-pom-dir}/ice-pom.xml"/>
+        <artifact:install file="${env.ICE_HOME}/lib/ice.jar"
+                          pomrefid="ice-pom"/>
+    </target>
+
+    <target name="generate-sources"
+            description="Generate .java files from .slice sources">
+        <mkdir dir="${slice2java-dir}"/>
+        <slice2java outputdir="${slice2java-dir}">
+            <fileset dir=".">
+                <include name="src/main/slice/**/*.ice"/>
+            </fileset>
+            <includepath>
+                <pathelement location="."/>
+                <pathelement location="${env.ICE_HOME}/slice"/>
+            </includepath>
+        </slice2java>
+    </target>
+
+    <target name="compile" depends="generate-sources"
+            description="Compiles generated .java files">
+        <mkdir dir="${classes-dir}"/>
+        <javac srcdir="${slice2java-dir}" destdir="${classes-dir}" debug="true">
+            <classpath>
+                <pathelement location="${env.ICE_HOME}/lib/Ice.jar"/>
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="doc" depends="generate-sources"
+            description="Generates javadocs for generated .java files">
+        <delete dir="${javadoc-dir}"/>
+        <mkdir dir="${javadoc-dir}"/>
+        <javadoc destdir="${javadoc-dir}" use="true"
+                 verbose="false">
+            <classpath>
+                <pathelement location="${env.ICE_HOME}/lib/Ice.jar"/>
+            </classpath>
+            <fileset dir="${slice2java-dir}">
+                <exclude name="**/*Holder.java"/>
+                <exclude name="**/*Helper.java"/>
+                <exclude name="**/_*Del.java"/>
+                <exclude name="**/_*Operations.java"/>
+                <exclude name="**/_*OperationsNC.java"/>
+                <exclude name="**/_*DelD.java"/>
+                <exclude name="**/_*DelM.java"/>
+                <exclude name="**/Callback_*.java"/>
+                <include name="**/*.java"/>
+            </fileset>
+        </javadoc>
+    </target>
+
+    <target name="package" depends="compile,doc"
+            description="Packages binaries, sources and javadoc .jar's">
+        <jar jarfile="target/lamba-rmi-api.jar" basedir="${classes-dir}"/>
+        <jar jarfile="target/lamba-rmi-api-sources.jar"
+             basedir="${slice2java-dir}"/>
+        <jar jarfile="target/lamba-rmi-api-javadoc.jar"
+             basedir="${javadoc-dir}"/>
+    </target>
+
+    <target name="install" depends="package,get-ice-version"
+            description="installs packages into local Maven repo">
+        <copy file="pom.xml.in" tofile="${generated-pom-dir}/pom.xml"
+              filtering="true" failonerror="true"/>
+        <artifact:pom id="pom" file="${generated-pom-dir}/pom.xml"/>
+        <artifact:install file="target/lamba-rmi-api.jar" pomrefid="pom">
+            <attach file="target/lamba-rmi-api-sources.jar"
+                    classifier="sources"/>
+            <attach file="target/lamba-rmi-api-javadoc.jar"
+                    classifier="javadoc"/>
+        </artifact:install>
+    </target>
+
+    <target name="clean"
+            description="Clean">
+        <delete dir="target"/>
+    </target>
+</project>
