@@ -14,7 +14,7 @@ module LambdaRmi
         ["amd"] Reading getReading();
     };
 
-    sequence<Sensor> SensorSeq;
+    sequence<Sensor*> SensorSeq;
 
     /** API for a collection of Sensors */
     interface Sensors
