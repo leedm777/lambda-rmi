@@ -4,6 +4,7 @@
     <option name="DEFAULT_COMPILER" value="Javac" />
     <resourceExtensions />
     <wildcardResourcePatterns>
+      <entry name="?*.conf" />
       <entry name="?*.txt" />
       <entry name="?*.properties" />
       <entry name="?*.xml" />

@@ -1,15 +1,16 @@
 package lambda_rmi
 
 import io.Source
-import LambdaRmi.SensorPrxHelper
+import LambdaRmi.{SensorsPrxHelper, SensorPrxHelper}
+
 class InvalidConfigurationException(cfg: Any) extends Exception(cfg.toString)
 
 object App {
 
   val Rand = new util.Random
 
-  val SensorCount = System.getProperty("lambda-rmi.sensor-count", "50").toInt
-  val MaxResponseTimeMillis = 1000
+  val SensorCount = System.getProperty("lambda-rmi.sensor-count", "10").toInt
+  val MaxResponseTimeMillis = 5000
 
 
   def main(args: Array[String]) {
@@ -18,7 +19,7 @@ object App {
 
     val zipCodes = Rand.shuffle(
       Source.fromInputStream(zipCodesStream).getLines.toSeq
-        .map(_.split(",").toList))
+        .map(_.split(",").toList.map(_.replaceAll("\"", ""))))
 
     val sensors = zipCodes
       .take(SensorCount)
@@ -41,6 +42,19 @@ object App {
     println(proxy)
     adapter.activate()
 
+    /*
+    SensorsPrxHelper.checkedCast(communicator.stringToProxy(proxy.toString)).
+      getSensors.map(_.ice_collocationOptimized(false)).
+      map(SensorPrxHelper.uncheckedCast(_)).
+      foreach{
+      p =>
+        val r = p.getReading
+        printf("[%f, %f] = %f C\n", r.latitudeDegrees, r.longitudeDegrees, r.temperatureCelcius)
+    }
+    */
+
+
     communicator.waitForShutdown
   }
+
 }
