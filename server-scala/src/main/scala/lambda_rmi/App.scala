@@ -1,7 +1,7 @@
 package lambda_rmi
 
 import io.Source
-import LambdaRmi.{SensorsPrxHelper, SensorPrxHelper}
+import LambdaRmi.SensorPrxHelper
 
 class InvalidConfigurationException(cfg: Any) extends Exception(cfg.toString)
 
@@ -23,7 +23,7 @@ object App {
 
     val sensors = zipCodes
       .take(SensorCount)
-      .map{
+      .map {
       case _ :: zip :: state :: city :: lat :: long :: _ :: _ :: Nil =>
         FakeSensor(zip, state, city, lat.toDouble, long.toDouble, MaxResponseTimeMillis)
       case wtf =>
@@ -37,21 +37,25 @@ object App {
     val sensorProxies = sensors.map((v: Ice.Object) =>
       SensorPrxHelper.uncheckedCast(adapter.addWithUUID(v)))
 
-    val fakeSensors = new FakeSensors(sensorProxies.toArray)
-    val proxy = adapter.add(fakeSensors, communicator.stringToIdentity("Sensors"))
+    val fakeSensors = new FakeAllSensors(sensorProxies.toArray)
+    val proxy = adapter.add(fakeSensors, communicator.stringToIdentity("AllSensors"))
     println(proxy)
     adapter.activate()
 
     /*
-    SensorsPrxHelper.checkedCast(communicator.stringToProxy(proxy.toString)).
-      getSensors.map(_.ice_collocationOptimized(false)).
-      map(SensorPrxHelper.uncheckedCast(_)).
-      foreach{
-      p =>
-        val r = p.getReading
-        printf("[%f, %f] = %f C\n", r.latitudeDegrees, r.longitudeDegrees, r.temperatureCelcius)
+    {
+      import LambdaRmi.AllSensorsPrxHelper;
+      AllSensorsPrxHelper.checkedCast(communicator.stringToProxy(proxy.toString)).
+        getSensors.map(_.ice_collocationOptimized(false)).
+        map(SensorPrxHelper.uncheckedCast(_)).
+        foreach {
+        p =>
+          val r = p.getReading
+          printf("[%f, %f] = %f C\n", r.latitudeDegrees, r.longitudeDegrees, r.temperatureCelcius)
+      }
     }
     */
+
 
 
     communicator.waitForShutdown

@@ -20,12 +20,12 @@ std::ostream& operator<<(std::ostream& o, LambdaRmi::ReadingPtr reading)
 
 int main(int argc, const char* argv[])
 {
-    std::string sensorsPrxStr = "Sensors -t:tcp -h localhost -p 1099";
+    std::string allSensorsPrxStr = "AllSensors -t:tcp -h localhost -p 1099";
 
     switch(argc)
     {
     case 2:
-        sensorsPrxStr = argv[1];
+        allSensorsPrxStr = argv[1];
         // fall through
     case 1:
         // no-op
@@ -36,15 +36,15 @@ int main(int argc, const char* argv[])
     try
     {
         ic = Ice::initialize();
-        LambdaRmi::SensorsPrx sensors = LambdaRmi::SensorsPrx::checkedCast(
-            ic->stringToProxy(sensorsPrxStr));
-        if (!sensors)
+        LambdaRmi::AllSensorsPrx allSensors = LambdaRmi::AllSensorsPrx::checkedCast(
+            ic->stringToProxy(allSensorsPrxStr));
+        if (!allSensors)
         {
-            std::clog << "Invalid proxy" << sensorsPrxStr << "\n";
+            std::clog << "Invalid proxy" << allSensorsPrxStr << "\n";
             return EXIT_FAILURE;
         }
 
-        LambdaRmi::SensorSeq sensorSeq = sensors->getSensors();
+        LambdaRmi::SensorSeq sensorSeq = allSensors->list();
         for (LambdaRmi::SensorSeq::iterator i = sensorSeq.begin();
              i != sensorSeq.end();
              ++i)

@@ -17,8 +17,8 @@ module LambdaRmi
     sequence<Sensor*> SensorSeq;
 
     /** API for a collection of Sensors */
-    interface Sensors
+    interface AllSensors
     {
-        SensorSeq getSensors();
+        SensorSeq list();
     };
 };
