@@ -1,22 +1,10 @@
+#include "SensorProcessor.h"
+
 #include <iostream>
 #include <string>
 
 #include <Ice/Ice.h>
 #include <Sensor.h>
-
-std::ostream& operator<<(std::ostream& o, LambdaRmi::ReadingPtr reading)
-{
-    if (reading)
-    {
-        return o << "(" << reading->latitudeDegrees << ","
-                 << reading->longitudeDegrees << ") - "
-                 << reading->temperatureCelcius;
-    }
-    else
-    {
-        return o << "(null)";
-    }
-}
 
 int main(int argc, const char* argv[])
 {
@@ -44,13 +32,10 @@ int main(int argc, const char* argv[])
             return EXIT_FAILURE;
         }
 
-        LambdaRmi::SensorSeq sensorSeq = allSensors->list();
-        for (LambdaRmi::SensorSeq::iterator i = sensorSeq.begin();
-             i != sensorSeq.end();
-             ++i)
-        {
-            std::cout << (*i)->getReading() << '\n';
-        }
+
+        SensorProcessorPtr processor = newSyncProcessor(allSensors);
+        double avg = processor->getAverageTemperatureCelsius();
+        std::cout << "Average temp: " << avg << '\n';
     }
     catch (const std::exception& e)
     {
