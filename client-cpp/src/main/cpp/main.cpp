@@ -58,7 +58,7 @@ int main(int argc, const char* argv[])
         }
         else if (processorName == "lambda")
         {
-            processor = newLamdaProcessor(allSensors);
+            processor = newLambdaProcessor(allSensors);
         }
         else
         {
