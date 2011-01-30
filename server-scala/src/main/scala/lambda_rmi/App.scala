@@ -10,7 +10,7 @@ object App {
   val Rand = new util.Random
 
   val SensorCount = System.getProperty("lambda-rmi.sensor-count", "10").toInt
-  val MaxResponseTimeMillis = 5000
+  val MaxResponseTimeMillis = 3000
 
 
   def main(args: Array[String]) {
