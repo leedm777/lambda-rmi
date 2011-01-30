@@ -5,6 +5,8 @@ set(SLICE2CPP_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated/slice2cpp)
 
 project(lambda-rmi-api)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ggdb")
+
 file(MAKE_DIRECTORY ${SLICE2CPP_DIR})
 include_directories(${SLICE2CPP_DIR})
 

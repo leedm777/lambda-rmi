@@ -13,7 +13,7 @@ server-scala:
 
 client-cpp:
 	mkdir -p client-cpp/target/cmake
-	cd client-cpp/target/cmake && cmake ../..
+	cd client-cpp/target/cmake && cmake ../.. -DCMAKE_CXX_COMPILER=g++-4.5
 	cmake --build client-cpp/target/cmake
 
 clean:

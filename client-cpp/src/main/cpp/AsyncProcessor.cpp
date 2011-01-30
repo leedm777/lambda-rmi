@@ -1,6 +1,5 @@
 #include "SensorProcessor.h"
 
-#include <boost/thread.hpp>
 #include <boost/function.hpp>
 
 struct CollectionData : public Ice::LocalObject
