@@ -6,36 +6,68 @@
 #include <Ice/Ice.h>
 #include <Sensor.h>
 
+Ice::CommunicatorPtr ic;
+
+void complete(double average)
+{
+    std::cout << "Average temp: " << average << '\n';
+
+    if (ic)
+    {
+        ic->shutdown();
+    }
+}
+
 int main(int argc, const char* argv[])
 {
     std::string allSensorsPrxStr = "AllSensors -t:tcp -h localhost -p 1099";
+    std::string processorName = "sync";
 
     switch(argc)
     {
-    case 2:
-        allSensorsPrxStr = argv[1];
+    case 3:
+        allSensorsPrxStr = argv[2];
         // fall through
+    case 2:
+        processorName = argv[1];
     case 1:
         // no-op
         break;
     }
 
-    Ice::CommunicatorPtr ic;
     try
     {
         ic = Ice::initialize();
-        LambdaRmi::AllSensorsPrx allSensors = LambdaRmi::AllSensorsPrx::checkedCast(
-            ic->stringToProxy(allSensorsPrxStr));
+        LambdaRmi::AllSensorsPrx allSensors =
+            LambdaRmi::AllSensorsPrx::checkedCast(
+                ic->stringToProxy(allSensorsPrxStr));
         if (!allSensors)
         {
             std::clog << "Invalid proxy" << allSensorsPrxStr << "\n";
             return EXIT_FAILURE;
         }
 
+        SensorProcessorPtr processor;
+        if (processorName == "sync")
+        {
+            processor = newSyncProcessor(allSensors);
+        }
+        else if (processorName == "async")
+        {
+            processor = newAsyncProcessor(allSensors);
+        }
+        else if (processorName == "lambda")
+        {
+            processor = newLamdaProcessor(allSensors);
+        }
+        else
+        {
+            std::clog << "Unknown processor " << processorName << '\n';
+            return 1;
+        }
 
-        SensorProcessorPtr processor = newSyncProcessor(allSensors);
-        double avg = processor->getAverageTemperatureCelsius();
-        std::cout << "Average temp: " << avg << '\n';
+        processor->getAverageTemperatureCelsius(complete);
+        ic->waitForShutdown();
     }
     catch (const std::exception& e)
     {
@@ -46,8 +78,4 @@ int main(int argc, const char* argv[])
         std::clog << "Exception: " << "unknown" << '\n';
     }
 
-    if (ic)
-    {
-        ic->destroy();
-    }
 }

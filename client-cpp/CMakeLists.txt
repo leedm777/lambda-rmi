@@ -9,10 +9,11 @@ find_library(ICE_UTIL NAMES IceUtil PATHS $ENV{ICE_HOME}/lib $ENV{ICE_HOME}/lib6
 include_directories($ENV{ICE_HOME}/include)
 include_directories(../api/target/cmake/generated/slice2cpp)
 
-add_executable(sync-client
+add_executable(client-cpp
     src/main/cpp/main.cpp
-    src/main/cpp/SyncProcessor.cpp)
-target_link_libraries(sync-client
+    src/main/cpp/SyncProcessor.cpp
+    src/main/cpp/AsyncProcessor.cpp)
+target_link_libraries(client-cpp
     ${LAMBDA_RMI_API}
     ${ICE}
     ${ICE_UTIL})

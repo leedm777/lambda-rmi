@@ -3,8 +3,10 @@
 class SyncProcessor : public SensorProcessor
 {
 public:
-    SyncProcessor(const LambdaRmi::AllSensorsPrx& allSensors) : SensorProcessor(allSensors) {}
-    double getAverageTemperatureCelsius() const
+    SyncProcessor(const LambdaRmi::AllSensorsPrx& allSensors) :
+        SensorProcessor(allSensors) {}
+    void getAverageTemperatureCelsius(
+        boost::function<void (double)> callback) const
     {
         double sum = 0;
         std::size_t count = 0;
@@ -20,14 +22,13 @@ public:
 
         if (count != 0)
         {
-            return sum / count;
+            callback(sum / count);
         }
         else
         {
-            return 0;
+            callback(0);
         }
     }
-
 };
 
 SensorProcessorPtr newSyncProcessor(const LambdaRmi::AllSensorsPrx& allSensors)

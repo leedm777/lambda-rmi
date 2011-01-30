@@ -1,5 +1,6 @@
 #include <Ice/Ice.h>
 #include <Sensor.h>
+#include <boost/function.hpp>
 
 inline std::ostream& operator<<(std::ostream& o, LambdaRmi::ReadingPtr reading)
 {
@@ -15,7 +16,7 @@ inline std::ostream& operator<<(std::ostream& o, LambdaRmi::ReadingPtr reading)
     }
 }
 
-class SensorProcessor : public Ice::Object
+class SensorProcessor : public IceUtil::Shared
 {
 public:
     SensorProcessor(const LambdaRmi::AllSensorsPrx& allSensors) :
@@ -23,7 +24,8 @@ public:
     {}
     virtual ~SensorProcessor() {}
 
-    virtual double getAverageTemperatureCelsius() const = 0;
+    virtual void getAverageTemperatureCelsius(
+        boost::function<void (double)> callback) const = 0;
 
 protected:
     const LambdaRmi::AllSensorsPrx& getAllSensors() const { return allSensors; }
