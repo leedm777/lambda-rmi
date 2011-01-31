@@ -1,30 +1,5 @@
+#include "FunctionalIceCallback.h"
 #include "SensorProcessor.h"
-
-#include <functional>
-
-typedef std::function<void (const Ice::AsyncResultPtr&)> CallbackFunction;
-class LambdaCallback : public IceUtil::Shared
-{
-public:
-    LambdaCallback(CallbackFunction callback) :
-        callback(callback)
-    {}
-
-    void invoke(const Ice::AsyncResultPtr& r)
-    {
-        callback(r);
-    }
-
-private:
-    CallbackFunction callback;
-};
-typedef IceUtil::Handle<LambdaCallback> LambdaCallbackPtr;
-
-Ice::CallbackPtr toIce(CallbackFunction callback)
-{
-    LambdaCallbackPtr lambdaWrapper = new LambdaCallback(callback);
-    return Ice::newCallback(lambdaWrapper, &LambdaCallback::invoke);
-}
 
 struct CollectionData
 {
@@ -50,10 +25,9 @@ public:
              i != sensorSeq.end();
              ++i)
         {
-            (*i)->begin_getReading(toIce([=](const Ice::AsyncResultPtr&r)
+            LambdaRmi::SensorPrx sensor = *i;
+            sensor->begin_getReading(toIce([=](const Ice::AsyncResultPtr&r)
             {
-                LambdaRmi::SensorPrx sensor =
-                    LambdaRmi::SensorPrx::uncheckedCast(r->getProxy());
                 LambdaRmi::ReadingPtr reading = sensor->end_getReading(r);
                 std::cout << reading << '\n';
                 data->sum += reading->temperatureCelcius;
