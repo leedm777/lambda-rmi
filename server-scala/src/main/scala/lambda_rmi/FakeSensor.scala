@@ -17,9 +17,6 @@ case class FakeSensor(zip: String, state: String, city: String, lat: Double, lon
   private val RandCount = 1
   val rand = new util.Random
 
-  /** Average RandCount even distribution random numbers to get a bell curve */
-  val nextDouble = (for (i <- 1.to(RandCount)) yield rand.nextDouble).foldLeft(0.0) { _ + _ } / RandCount
-
   def currentTemp = (WeatherMan.actor !! (zip, 5000)) match {
   case Some(temp :Double) => temp
   case None => throw new RuntimeException("Didn't return")
@@ -29,6 +26,6 @@ case class FakeSensor(zip: String, state: String, city: String, lat: Double, lon
 
   def getReading_async(cb: AMD_Sensor_getReading, current: Current) = {
     Scheduler.scheduleOnce(() => cb.ice_response(currentReading),
-      (nextDouble * maxResponseTimeMillis).toInt, TimeUnit.MILLISECONDS)
+      (rand.nextDouble * maxResponseTimeMillis).toInt, TimeUnit.MILLISECONDS)
   }
 }
