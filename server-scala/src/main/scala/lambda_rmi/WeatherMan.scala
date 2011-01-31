@@ -14,28 +14,37 @@ import xml.XML
 import java.net.URL
 import akka.stm._
 
+/**
+ * An actor that replies with the current temperature (in Celsius) when sent
+ * a string Zip code.
+ * <p/>
+ * Honestly, this is a result of me getting a little distracted playing around
+ * with actors and STM from Akka.
+ */
 class WeatherMan extends Actor {
+  /** When true, the current temperature is 25 C universally */
+  val GetWeatherFromGoogle = false
+  /** Min time to wait between requests. */
   val MinMillisBetweenRequests = 1000
-  val lastSentMillis = Ref(0L)
+  private val lastSentMillis = Ref(0L)
 
   def nowMillis = System.nanoTime / 1000000
 
-  var fast = true
-
   def receive = {
     case zip: String =>
-
-      if (fast) {
-        self.reply(25.0)
-      } else {
+      if (GetWeatherFromGoogle) {
+        // a lock-free way to wait a minimum amount of time between requests
+        // didn't have a big need for this; just wanted to avoid getting
+        // blacklisted by Google
         atomic{
-          // wait between requests
-          val delta = MinMillisBetweenRequests - (nowMillis - lastSentMillis.get)
+          val timeSinceLastRequestMillis: Long = nowMillis - lastSentMillis.get
+          val delta = MinMillisBetweenRequests - timeSinceLastRequestMillis
           if (delta > 0) {
             Thread.sleep(delta)
           }
           lastSentMillis.set(nowMillis)
         }
+        // quick hack to get the current temperature from Google
         val url = new URL("http://www.google.com/ig/api?weather=" + zip)
         val tempXML = XML.load(url.openConnection.getInputStream)
         val temp = (tempXML \\ "temp_c" \ "@data").toString
@@ -44,6 +53,8 @@ class WeatherMan extends Actor {
         } else {
           self.reply(25.0)
         }
+      } else {
+        self.reply(25.0)
       }
     case _ =>
       log.error("Unexpected message")

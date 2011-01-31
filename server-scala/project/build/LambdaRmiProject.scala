@@ -9,6 +9,9 @@ class LambdaRmiProject(info: ProjectInfo) extends DefaultProject(info) with Akka
   val akkaStm = akkaModule("stm")
   val akkaTypedActor = akkaModule("typed-actor")
 
+
+  override def mainClass = Some("lambda_rmi.App")
+
   override def libraryDependencies = Set(
     "com.github.leedm777.lambda-rmi" % "api" % "0.0.1-SNAPSHOT" % "compile->default",
     "org.scalatest" % "scalatest" % "1.2" % "test->default"
