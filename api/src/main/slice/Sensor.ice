@@ -7,6 +7,7 @@
  * the BSD License. See the LICENSE.txt file at the top of the
  * source tree.
  */
+
 module LambdaRmi
 {
     /** Individual reading from the sensor */

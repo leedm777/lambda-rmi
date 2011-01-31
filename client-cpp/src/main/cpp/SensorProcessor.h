@@ -9,8 +9,42 @@
  */
 #include <Ice/Ice.h>
 #include <Sensor.h>
-#include <boost/function.hpp>
 
+#include <functional>
+
+/**
+ * Interface for the different methods for processing the sensors.
+ */
+class SensorProcessor
+{
+public:
+    SensorProcessor(const LambdaRmi::AllSensorsPrx& allSensors) :
+        allSensors(allSensors)
+    {}
+    virtual ~SensorProcessor() {}
+
+    /**
+     * Gets the average temperature form the sensors.  Average is returned
+     * via callback function to allow for async implementations.
+     */
+    virtual void getAverageTemperatureCelsius(
+        std::function<void (double)> callback) const = 0;
+
+protected:
+    const LambdaRmi::AllSensorsPrx& getAllSensors() const { return allSensors; }
+
+private:
+    LambdaRmi::AllSensorsPrx allSensors;
+};
+
+std::shared_ptr<SensorProcessor> newSyncProcessor(
+    const LambdaRmi::AllSensorsPrx& allSensors);
+std::shared_ptr<SensorProcessor> newAsyncProcessor(
+    const LambdaRmi::AllSensorsPrx& allSensors);
+std::shared_ptr<SensorProcessor> newLambdaProcessor(
+    const LambdaRmi::AllSensorsPrx& allSensors);
+
+/** Easy way to print out readings. */
 inline std::ostream& operator<<(std::ostream& o, LambdaRmi::ReadingPtr reading)
 {
     if (reading)
@@ -24,27 +58,3 @@ inline std::ostream& operator<<(std::ostream& o, LambdaRmi::ReadingPtr reading)
         return o << "(null)";
     }
 }
-
-class SensorProcessor : public IceUtil::Shared
-{
-public:
-    SensorProcessor(const LambdaRmi::AllSensorsPrx& allSensors) :
-        allSensors(allSensors)
-    {}
-    virtual ~SensorProcessor() {}
-
-    virtual void getAverageTemperatureCelsius(
-        boost::function<void (double)> callback) const = 0;
-
-protected:
-    const LambdaRmi::AllSensorsPrx& getAllSensors() const { return allSensors; }
-
-private:
-    LambdaRmi::AllSensorsPrx allSensors;
-};
-
-typedef IceUtil::Handle<SensorProcessor> SensorProcessorPtr;
-
-SensorProcessorPtr newSyncProcessor(const LambdaRmi::AllSensorsPrx& allSensors);
-SensorProcessorPtr newAsyncProcessor(const LambdaRmi::AllSensorsPrx& allSensors);
-SensorProcessorPtr newLambdaProcessor(const LambdaRmi::AllSensorsPrx& allSensors);

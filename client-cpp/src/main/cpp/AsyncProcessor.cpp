@@ -11,6 +11,9 @@
 
 #include <boost/function.hpp>
 
+/**
+ * Shared state between callback functions.
+ */
 struct CollectionData : public Ice::LocalObject
 {
     CollectionData(boost::function<void (double)> callback, std::size_t expected) :
@@ -18,17 +21,6 @@ struct CollectionData : public Ice::LocalObject
     {
     }
 
-    void sample(double v)
-    {
-        sum += v;
-        ++count;
-    }
-
-    bool isFinished() const { return count == expected; }
-
-    void sendAverage() const { callback(sum / count); }
-
-private:
     boost::function<void (double)> callback;
     std::size_t expected;
     double sum;
@@ -37,6 +29,9 @@ private:
 };
 typedef IceUtil::Handle<CollectionData> CollectionDataPtr;
 
+/**
+ * SensorProcessor which asynchronously queries all sensors at once.
+ */
 class AsyncProcessor : public SensorProcessor
 {
 public:

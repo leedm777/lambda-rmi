@@ -9,13 +9,17 @@
  */
 #include "SensorProcessor.h"
 
+/**
+ * SensorProcessor which synchronously walks through the given sensors, one at a
+ * time.
+ */
 class SyncProcessor : public SensorProcessor
 {
 public:
     SyncProcessor(const LambdaRmi::AllSensorsPrx& allSensors) :
         SensorProcessor(allSensors) {}
     void getAverageTemperatureCelsius(
-        boost::function<void (double)> callback) const
+        std::function<void (double)> callback) const
     {
         double sum = 0;
         std::size_t count = 0;

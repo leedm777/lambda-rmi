@@ -11,7 +11,7 @@ cmake_minimum_required(VERSION 2.8)
 
 project(client-cpp C CXX)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -DBOOST_ALL_NO_LIB -DBOOST_ALL_DYN_LINK -ggdb")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -ggdb")
 
 find_library(LAMBDA_RMI_API lambda-rmi-api ../api/target/cmake NO_DEFAULT_PATH)
@@ -24,8 +24,8 @@ include_directories(SYSTEM ../api/target/cmake/generated/slice2cpp)
 add_executable(client-cpp
     src/main/cpp/main.cpp
     src/main/cpp/SyncProcessor.cpp
-    src/main/cpp/AsyncProcessor.cpp
-    src/main/cpp/LambdaProcessor.cpp)
+    src/main/cpp/AsyncProcessor.cpp)
+#    src/main/cpp/LambdaProcessor.cpp)
 target_link_libraries(client-cpp
     ${LAMBDA_RMI_API}
     ${ICE}

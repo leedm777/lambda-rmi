@@ -1,3 +1,7 @@
+# C++ compiler.  Pass CXX=<compiler> use something other than g++
+CXX=g++
+CXXFLAGS=-std=c++0x
+
 all: api-java api-cpp client-cpp
 
 api-java:
@@ -5,7 +9,7 @@ api-java:
 
 api-cpp:
 	mkdir -p api/target/cmake
-	cd api/target/cmake && cmake ../..
+	cd api/target/cmake && cmake ../.. -DCMAKE_CXX_COMPILER=$(CXX) -DCMAKE_CXX_FLAGS=$(CXXFLAGS)
 	cmake --build api/target/cmake
 
 server-scala:
@@ -13,7 +17,7 @@ server-scala:
 
 client-cpp:
 	mkdir -p client-cpp/target/cmake
-	cd client-cpp/target/cmake && cmake ../.. -DCMAKE_CXX_COMPILER=g++-4.5
+	cd client-cpp/target/cmake && cmake ../.. -DCMAKE_CXX_COMPILER=$(CXX) -DCMAKE_CXX_FLAGS=$(CXXFLAGS)
 	cmake --build client-cpp/target/cmake
 
 clean:

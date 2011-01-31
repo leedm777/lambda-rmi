@@ -15,8 +15,13 @@
 #include <Ice/Ice.h>
 #include <Sensor.h>
 
-Ice::CommunicatorPtr ic;
+/**
+ * Communicator for the application.  This is a quick hack, so I'll let the
+ * global variable slide.  This time...
+ */
+namespace { Ice::CommunicatorPtr ic; }
 
+/** Completion callback for the sensor processor */
 void complete(double average)
 {
     std::cout << "Average temp: " << average << '\n';
@@ -27,6 +32,10 @@ void complete(double average)
     }
 }
 
+/**
+ * A simple command line application that contacts the sensor server, prints the
+ * temp from all sensors, then prints the average.
+ */
 int main(int argc, const char* argv[])
 {
     std::string allSensorsPrxStr = "AllSensors -t:tcp -h localhost -p 1099";
@@ -46,7 +55,10 @@ int main(int argc, const char* argv[])
 
     try
     {
+        // Ice init
         ic = Ice::initialize();
+
+        // build the proxy for the AllSensors object
         LambdaRmi::AllSensorsPrx allSensors =
             LambdaRmi::AllSensorsPrx::checkedCast(
                 ic->stringToProxy(allSensorsPrxStr));
@@ -56,6 +68,7 @@ int main(int argc, const char* argv[])
             return EXIT_FAILURE;
         }
 
+        // create the processor
         SensorProcessorPtr processor;
         if (processorName == "sync")
         {
@@ -72,10 +85,13 @@ int main(int argc, const char* argv[])
         else
         {
             std::clog << "Unknown processor " << processorName << '\n';
-            return 1;
+            return EXIT_FAILURE;
         }
 
+        // process
         processor->getAverageTemperatureCelsius(complete);
+
+        // wait for the completion callback to shut us down
         ic->waitForShutdown();
     }
     catch (const std::exception& e)
