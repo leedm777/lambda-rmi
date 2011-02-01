@@ -10,8 +10,10 @@ import util.{ NamedPF }
 
 class Boot {
   def boot {
-  
-  
+
+    // XHTML is not Google Maps friendly
+    LiftRules.useXhtmlMimeType = false
+
     // where to search snippet
     LiftRules.addToPackages("lambda_rmi")
 

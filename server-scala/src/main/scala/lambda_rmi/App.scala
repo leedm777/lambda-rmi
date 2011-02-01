@@ -50,8 +50,8 @@ object App {
     val fakeSensors = util.Random.shuffle(zipCodes)
       .take(SensorCount)
       .map {
-      case _ :: zip :: state :: city :: lat :: long :: _ :: _ :: Nil =>
-        FakeSensor(zip, state, city, lat.toDouble, long.toDouble,
+      case _ :: zip :: state :: city :: long :: lat :: _ :: _ :: Nil =>
+        FakeSensor(zip, state, city, lat.toDouble, -long.toDouble,
           MaxResponseTimeMillis)
       case wtf =>
         throw new InvalidConfigurationException(wtf)

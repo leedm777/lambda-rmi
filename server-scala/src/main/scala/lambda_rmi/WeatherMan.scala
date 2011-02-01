@@ -22,8 +22,8 @@ import akka.stm._
  * with actors and STM from Akka.
  */
 class WeatherMan extends Actor {
-  /** When true, the current temperature is 25 C universally */
-  val GetWeatherFromGoogle = false
+  /** When false, the current temperature is 25 C universally */
+  val GetWeatherFromGoogle = true
   /** Min time to wait between requests. */
   val MinMillisBetweenRequests = 1000
   private val lastSentMillis = Ref(0L)

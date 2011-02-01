@@ -49,8 +49,14 @@ client-cpp: api-cpp
 	    -DCMAKE_CXX_COMPILER=$(CXX) -DCMAKE_CXX_FLAGS=$(CXXFLAGS)
 	$(CMAKE) --build client-cpp/target/cmake
 
+webapp-scala: api-java
+	cd webapp-scala && $(SBT) update compile
+
 run-server: server-scala
 	cd server-scala && $(SBT) run
+
+run-webapp: webapp-scala
+	cd webapp-scala && $(SBT) jetty
 
 run-client-cpp: client-cpp
 	./client-cpp/target/cmake/client-cpp
