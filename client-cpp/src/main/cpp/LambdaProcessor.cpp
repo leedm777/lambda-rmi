@@ -77,7 +77,8 @@ public:
     }
 };
 
-SensorProcessorPtr newLambdaProcessor(const LambdaRmi::AllSensorsPrx& allSensors)
+std::shared_ptr<SensorProcessor> newLambdaProcessor(
+    const LambdaRmi::AllSensorsPrx& allSensors)
 {
-    return new LambdaProcessor(allSensors);
+    return std::shared_ptr<SensorProcessor>(new LambdaProcessor(allSensors));
 }

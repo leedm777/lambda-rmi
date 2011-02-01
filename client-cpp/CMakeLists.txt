@@ -24,8 +24,8 @@ include_directories(SYSTEM ../api/target/cmake/generated/slice2cpp)
 add_executable(client-cpp
     src/main/cpp/main.cpp
     src/main/cpp/SyncProcessor.cpp
-    src/main/cpp/AsyncProcessor.cpp)
-#    src/main/cpp/LambdaProcessor.cpp)
+    src/main/cpp/AsyncProcessor.cpp
+    src/main/cpp/LambdaProcessor.cpp)
 target_link_libraries(client-cpp
     ${LAMBDA_RMI_API}
     ${ICE}

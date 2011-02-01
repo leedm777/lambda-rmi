@@ -16,7 +16,8 @@
  */
 struct CollectionData : public Ice::LocalObject
 {
-    CollectionData(boost::function<void (double)> callback, std::size_t expected) :
+    CollectionData(boost::function<void (double)> callback,
+        std::size_t expected) :
         callback(callback), expected(expected), sum(0), count(0)
     {
     }
@@ -26,6 +27,21 @@ struct CollectionData : public Ice::LocalObject
     double sum;
     int count;
 
+    void finished(const Ice::AsyncResultPtr& r)
+    {
+        LambdaRmi::SensorPrx sensor =
+            LambdaRmi::SensorPrx::uncheckedCast(r->getProxy());
+        LambdaRmi::ReadingPtr reading = sensor->end_getReading(r);
+        std::cout << reading << '\n';
+
+	sum += reading->temperatureCelcius;
+	++count;
+
+        if (expected == count)
+        {
+            callback(sum / count);
+        }
+    }
 };
 typedef IceUtil::Handle<CollectionData> CollectionDataPtr;
 
@@ -39,16 +55,14 @@ public:
         SensorProcessor(allSensors)
     {}
     void getAverageTemperatureCelsius(
-        boost::function<void (double)> callback) const
+        std::function<void (double)> callback) const
     {
-
-        Ice::CallbackPtr iceCallback =
-            Ice::newCallback((AsyncProcessor*)this, &AsyncProcessor::finished);
-
         LambdaRmi::SensorSeq sensorSeq = getAllSensors()->list();
         assert(sensorSeq.size() > 0);
         CollectionDataPtr collectionData =
             new CollectionData(callback, sensorSeq.size());
+        Ice::CallbackPtr iceCallback =
+            Ice::newCallback(collectionData, &CollectionData::finished);
 
         for (LambdaRmi::SensorSeq::iterator i = sensorSeq.begin();
              i != sensorSeq.end();
@@ -57,26 +71,10 @@ public:
             (*i)->begin_getReading(iceCallback, collectionData);
         }
     }
-private:
-    void finished(const Ice::AsyncResultPtr& r)
-    {
-        LambdaRmi::SensorPrx sensor =
-            LambdaRmi::SensorPrx::uncheckedCast(r->getProxy());
-        LambdaRmi::ReadingPtr reading = sensor->end_getReading(r);
-        std::cout << reading << '\n';
-
-        CollectionDataPtr data =
-            CollectionDataPtr::dynamicCast(r->getCookie());
-        data->sample(reading->temperatureCelcius);
-
-        if (data->isFinished())
-        {
-            data->sendAverage();
-        }
-    }
 };
 
-SensorProcessorPtr newAsyncProcessor(const LambdaRmi::AllSensorsPrx& allSensors)
+std::shared_ptr<SensorProcessor> newAsyncProcessor(
+    const LambdaRmi::AllSensorsPrx& allSensors)
 {
-    return new AsyncProcessor(allSensors);
+    return std::shared_ptr<SensorProcessor>(new AsyncProcessor(allSensors));
 }

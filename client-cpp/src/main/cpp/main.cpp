@@ -69,7 +69,7 @@ int main(int argc, const char* argv[])
         }
 
         // create the processor
-        SensorProcessorPtr processor;
+	std::shared_ptr<SensorProcessor> processor;
         if (processorName == "sync")
         {
             processor = newSyncProcessor(allSensors);

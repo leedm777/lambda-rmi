@@ -9,6 +9,8 @@
  */
 #include "SensorProcessor.h"
 
+#include <memory>
+
 /**
  * SensorProcessor which synchronously walks through the given sensors, one at a
  * time.
@@ -44,7 +46,8 @@ public:
     }
 };
 
-SensorProcessorPtr newSyncProcessor(const LambdaRmi::AllSensorsPrx& allSensors)
+std::shared_ptr<SensorProcessor> newSyncProcessor(
+    const LambdaRmi::AllSensorsPrx& allSensors)
 {
-    return new SyncProcessor(allSensors);
+    return std::shared_ptr<SensorProcessor>(new SyncProcessor(allSensors));
 }
