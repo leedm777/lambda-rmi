@@ -34,11 +34,11 @@
     </target>
 
     <target name="install-ice" depends="get-ice-version"
-            description="Installs ice.jar from ICE_HOME into local Maven repo">
+            description="Installs Ice.jar from ICE_HOME into local Maven repo">
         <copy file="ice-pom.xml.in" tofile="${generated-pom-dir}/ice-pom.xml"
               filtering="true" failonerror="true"/>
         <artifact:pom id="ice-pom" file="${generated-pom-dir}/ice-pom.xml"/>
-        <artifact:install file="${env.ICE_HOME}/lib/ice.jar"
+        <artifact:install file="${env.ICE_HOME}/lib/Ice.jar"
                           pomrefid="ice-pom"/>
     </target>
 
